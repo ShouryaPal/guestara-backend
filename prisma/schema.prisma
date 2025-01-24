@@ -1,0 +1,59 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  image         String
+  description   String
+  taxApplicable Boolean
+  tax           Float?
+  taxType       TaxType?
+  subCategories SubCategory[]
+  items         Item[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model SubCategory {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  image         String
+  description   String
+  taxApplicable Boolean
+  tax           Float?
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    String   @db.ObjectId
+  items         Item[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Item {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  image         String
+  description   String
+  taxApplicable Boolean
+  tax           Float?
+  baseAmount    Float
+  discount      Float
+  totalAmount   Float
+  category      Category?    @relation(fields: [categoryId], references: [id])
+  categoryId    String?      @db.ObjectId
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  subCategoryId String?      @db.ObjectId
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+enum TaxType {
+  PERCENTAGE
+  FIXED
+}
