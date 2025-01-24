@@ -7,7 +7,7 @@ export const CategorySchema = z
     description: z.string().min(1, "Description is required"),
     taxApplicable: z.boolean(),
     tax: z.number().optional().nullable(),
-    taxType: z.enum(["PERCENTAGE", "FIXED"]).optional(),
+    taxType: z.enum(["PERCENTAGE", "FIXED"]).optional().nullable(),
   })
   .refine(
     (data) =>
@@ -22,7 +22,7 @@ export const SubCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   image: z.string().url("Invalid image URL"),
   description: z.string().min(1, "Description is required"),
-  categoryId: z.string(),
+  categoryName: z.string().min(1, "Category name is required"), // Use categoryName instead of categoryId
   taxApplicable: z.boolean().optional(),
   tax: z.number().optional(),
 });
@@ -37,8 +37,8 @@ export const ItemSchema = z
     baseAmount: z.number().min(0, "Base amount must be positive"),
     discount: z.number().optional().default(0),
     totalAmount: z.number().min(0, "Total amount must be positive"),
-    categoryId: z.string().optional(),
-    subCategoryId: z.string().optional(),
+    categoryName: z.string().optional(),
+    subCategoryName: z.string().optional(),
   })
   .refine((data) => !data.taxApplicable || data.tax !== undefined, {
     message: "Tax is required when tax is applicable",

@@ -151,14 +151,48 @@ export const createItem = async (
       baseAmount,
       discount,
       totalAmount,
-      categoryId,
-      subCategoryId,
+      categoryName,
+      subCategoryName,
     } = validation.data;
 
+    let categoryId: string | undefined;
+    let subCategoryId: string | undefined;
+
+    // Find the sub-category by name (if provided)
+    if (subCategoryName) {
+      const subCategory = await prisma.subCategory.findFirst({
+        where: { name: subCategoryName },
+        include: { category: true },
+      });
+
+      if (!subCategory) {
+        res.status(404).json({ error: "Sub-category not found" });
+        return;
+      }
+
+      subCategoryId = subCategory.id;
+      categoryId = subCategory.categoryId; // Use the category ID from the sub-category
+    }
+
+    // Find the category by name (if sub-category is not provided)
+    if (categoryName && !subCategoryName) {
+      const category = await prisma.category.findFirst({
+        where: { name: categoryName },
+      });
+
+      if (!category) {
+        res.status(404).json({ error: "Category not found" });
+        return;
+      }
+
+      categoryId = category.id;
+    }
+
+    // Ensure either categoryId or subCategoryId is provided
     if (!categoryId && !subCategoryId) {
       res
         .status(400)
-        .json({ error: "Either categoryId or subCategoryId is required" });
+        .json({ error: "Either categoryName or subCategoryName is required" });
       return;
     }
 
@@ -179,6 +213,7 @@ export const createItem = async (
 
     res.status(201).json(newItem);
   } catch (error) {
+    console.error("Error creating item:", error);
     res.status(500).json({ error: "Failed to create item" });
   }
 };
@@ -204,9 +239,50 @@ export const updateItem = async (
       baseAmount,
       discount,
       totalAmount,
-      categoryId,
-      subCategoryId,
+      categoryName,
+      subCategoryName,
     } = validation.data;
+
+    let categoryId: string | undefined;
+    let subCategoryId: string | undefined;
+
+    // Find the sub-category by name (if provided)
+    if (subCategoryName) {
+      const subCategory = await prisma.subCategory.findFirst({
+        where: { name: subCategoryName },
+        include: { category: true },
+      });
+
+      if (!subCategory) {
+        res.status(404).json({ error: "Sub-category not found" });
+        return;
+      }
+
+      subCategoryId = subCategory.id;
+      categoryId = subCategory.categoryId; // Use the category ID from the sub-category
+    }
+
+    // Find the category by name (if sub-category is not provided)
+    if (categoryName && !subCategoryName) {
+      const category = await prisma.category.findFirst({
+        where: { name: categoryName },
+      });
+
+      if (!category) {
+        res.status(404).json({ error: "Category not found" });
+        return;
+      }
+
+      categoryId = category.id;
+    }
+
+    // Ensure either categoryId or subCategoryId is provided
+    if (!categoryId && !subCategoryId) {
+      res
+        .status(400)
+        .json({ error: "Either categoryName or subCategoryName is required" });
+      return;
+    }
 
     const updatedItem = await prisma.item.update({
       where: { id },
@@ -226,6 +302,7 @@ export const updateItem = async (
 
     res.status(200).json(updatedItem);
   } catch (error) {
+    console.error("Error updating item:", error);
     res.status(500).json({ error: "Failed to update item" });
   }
 };

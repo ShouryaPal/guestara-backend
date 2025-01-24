@@ -128,6 +128,7 @@ export const updateCategory = async (
 
     res.status(200).json(updatedCategory);
   } catch (error) {
+    console.error("Error creating category:", error);
     res.status(500).json({ error: "Failed to update category" });
   }
 };

@@ -96,10 +96,11 @@ export const createSubCategory = async (
       return;
     }
 
-    const { name, image, description, categoryId, taxApplicable, tax } =
+    const { name, image, description, categoryName, taxApplicable, tax } =
       validation.data;
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+
+    const category = await prisma.category.findFirst({
+      where: { name: categoryName },
     });
 
     if (!category) {
@@ -112,7 +113,7 @@ export const createSubCategory = async (
         name,
         image,
         description,
-        categoryId,
+        categoryId: category.id,
         taxApplicable: taxApplicable ?? category.taxApplicable,
         tax: tax ?? category.tax,
       },
@@ -120,6 +121,7 @@ export const createSubCategory = async (
 
     res.status(201).json(newSubCategory);
   } catch (error) {
+    console.error("Error creating sub-category:", error);
     res.status(500).json({ error: "Failed to create sub-category" });
   }
 };
@@ -136,8 +138,18 @@ export const updateSubCategory = async (
       return;
     }
 
-    const { name, image, description, categoryId, taxApplicable, tax } =
+    const { name, image, description, categoryName, taxApplicable, tax } =
       validation.data;
+
+    // Find the category by name
+    const category = await prisma.category.findFirst({
+      where: { name: categoryName },
+    });
+
+    if (!category) {
+      res.status(404).json({ error: "Category not found" });
+      return;
+    }
 
     const updatedSubCategory = await prisma.subCategory.update({
       where: { id },
@@ -145,14 +157,15 @@ export const updateSubCategory = async (
         name,
         image,
         description,
-        categoryId,
-        taxApplicable,
-        tax,
+        categoryId: category.id, // Use the fetched category ID
+        taxApplicable: taxApplicable ?? category.taxApplicable,
+        tax: tax ?? category.tax,
       },
     });
 
     res.status(200).json(updatedSubCategory);
   } catch (error) {
+    console.error("Error updating sub-category:", error);
     res.status(500).json({ error: "Failed to update sub-category" });
   }
 };
