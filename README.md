@@ -32,7 +32,7 @@ touch .env
 
 5. Add your MongoDB connection URL in the `.env` file
 ```env
-MONGODB_URI=your_mongodb_connection_string_here
+DATABASE_URL=your_mongodb_connection_string_here
 ```
 
 ## Running the Application
